@@ -1,0 +1,16 @@
+.env
+
+.venv
+venv
+env
+
+__pycache__/
+*.pyc
+
+*.pkl
+*.index
+
+*_raw.json
+
+.vscode/
+.idea/
