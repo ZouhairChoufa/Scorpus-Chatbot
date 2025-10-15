@@ -23,7 +23,6 @@ def create_semantic_index(data_file='articles.csv'):
 
     faiss.write_index(index, 'articles.index')
     
-    # Le pickle n'est plus nécessaire si on lit les CSV directement dans l'app, mais on le garde pour la simplicité.
     df.to_pickle('articles_df.pkl')
     print("L'index FAISS ('articles.index') et le dataframe ('articles_df.pkl') ont été créés.")
 

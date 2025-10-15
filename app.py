@@ -5,7 +5,6 @@ import faiss
 import numpy as np
 import plotly.express as px
 
-# --- Configuration de la page et style ---
 st.set_page_config(page_title="Scopus Chatbot", layout="wide")
 
 st.markdown("""
@@ -27,8 +26,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-
-# --- Fonctions de chargement ---
 @st.cache_resource
 def load_model():
     return SentenceTransformer('all-MiniLM-L6-v2')
@@ -52,60 +49,43 @@ def load_data():
         st.error(f"Erreur: Le fichier {e.filename} est manquant. Veuillez exécuter les scripts de préparation.")
         return None, None, None
 
-# --- Fonction de recherche ---
 def semantic_search(query, model, index, k=50):
     query_vector = model.encode([query])
     distances, indices = index.search(np.array(query_vector, dtype=np.float32), k)
     return articles_df.iloc[indices[0]]
 
-# --- Chargement des données ---
 model = load_model()
 index = load_faiss_index()
 articles_df, authors_df, links_df = load_data()
 
-# Initialisation de l'état de session
 if 'results_df' not in st.session_state:
     st.session_state.results_df = pd.DataFrame()
 if 'last_query' not in st.session_state:
     st.session_state.last_query = ""
 
-# --- Interface Utilisateur ---
 st.title("🤖 Chatbot Intelligent pour la Recherche sur Scopus")
 
 if index is not None and articles_df is not None:
-    # --- Barre latérale ---
     st.sidebar.header("Filtres & Options")
-    
     if st.sidebar.button("Effacer les résultats et la requête"):
         st.session_state.results_df = pd.DataFrame()
         st.session_state.last_query = ""
         st.rerun() 
-
-    # --- Logique de Recherche ---
     if user_query := st.chat_input("Posez une question (ENG) sur un sujet scientifique..."):
         st.session_state.results_df = semantic_search(user_query, model, index)
         st.session_state.last_query = user_query
-    
-    # Afficher la dernière requête de l'utilisateur à droite
     if st.session_state.last_query:
         st.markdown(f'<div class="user-message-container"><div class="user-message">{st.session_state.last_query}</div></div>', unsafe_allow_html=True)
-
-    # --- Filtrage et Affichage ---
     if not st.session_state.results_df.empty:
         results_to_filter = st.session_state.results_df
-
-        # Extraire les auteurs et les années disponibles DANS LES RÉSULTATS ACTUELS
         result_article_ids = results_to_filter['article_id']
         result_author_ids = links_df[links_df['article_id'].isin(result_article_ids)]['author_id']
         authors_in_results = authors_df[authors_df['author_id'].isin(result_author_ids)]['author_name'].sort_values().unique()
 
         min_year = int(results_to_filter['year'].min())
         max_year = int(results_to_filter['year'].max())
-
-        # --- Filtres dynamiques dans la barre latérale ---
         st.sidebar.subheader("Affiner les résultats actuels")
 
-        # Filtre par année
         if min_year == max_year:
             st.sidebar.write(f"Année de publication : {min_year}")
             year_range = (min_year, max_year)
@@ -117,7 +97,6 @@ if index is not None and articles_df is not None:
                 (min_year, max_year)
             )
         
-        # Le filtre par auteur n'apparaît que s'il y a des auteurs à filtrer dans les résultats
         selected_authors = []
         if len(authors_in_results) > 0:
             selected_authors = st.sidebar.multiselect(
@@ -125,7 +104,6 @@ if index is not None and articles_df is not None:
                 options=authors_in_results
             )
 
-        # Application des filtres
         filtered_df = results_to_filter[
             (results_to_filter['year'] >= year_range[0]) & (results_to_filter['year'] <= year_range[1])
         ]
@@ -135,7 +113,6 @@ if index is not None and articles_df is not None:
             article_ids_to_keep = links_df[links_df['author_id'].isin(author_ids_to_filter)]['article_id']
             filtered_df = filtered_df[filtered_df['article_id'].isin(article_ids_to_keep)]
         
-        # Affichage des résultats
         with st.chat_message("assistant"):
             st.write(f"Affichage de **{len(filtered_df)}** résultats pertinents :")
             

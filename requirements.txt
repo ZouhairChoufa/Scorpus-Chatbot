@@ -1,16 +1,7 @@
-# Pour les requêtes API et la gestion des clés
 requests
 python-dotenv
-
-# Pour le nettoyage et la manipulation des données
 pandas
-
-# Pour la vectorisation sémantique
 sentence-transformers
-
-# Pour l'indexation vectorielle (choisissez faiss)
 faiss-cpu
-
-# Pour l'interface web
 streamlit
 plotly

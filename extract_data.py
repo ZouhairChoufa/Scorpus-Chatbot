@@ -68,7 +68,6 @@ if __name__ == "__main__":
     raw_data = get_all_scopus_results(search_query, max_results=number_of_articles_to_download)
 
     if raw_data['search-results']['entry']:
-        # Remplace les espaces par des underscores pour un nom de fichier valide
         filename = f"{user_theme.replace(' ', '_')}_raw.json"
         
         with open(filename, 'w', encoding='utf-8') as f:
